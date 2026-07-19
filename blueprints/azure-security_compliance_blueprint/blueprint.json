@@ -1,0 +1,67 @@
+{
+  "properties": {
+    "description": "Security Compliance Blueprint",
+    "targetScope": "subscription",
+    "parameters": {
+      "allowedLocations": {
+        "type": "array",
+        "metadata": {
+          "displayName": "Allowed Azure Locations"
+        }
+      },
+      "requiredTags": {
+        "type": "object",
+        "metadata": {
+          "displayName": "Required Tags"
+        }
+      }
+    },
+    "resourceGroups": {
+      "rg-compliance": {
+        "description": "Compliance Resource Group"
+      }
+    },
+    "artifacts": [
+        {
+        "type": "resourceGroup",
+        "name": "rg-compliance",
+        "path": "artifacts/resource-group-rg-compliance.json"
+        },
+      {
+        "type": "policyAssignment",
+        "name": "security-initiative-assignment",
+        "path": "artifacts/policy-assignment-security-initiative.json"
+      },
+      {
+        "type": "policyAssignment",
+        "name": "keyvault-purge-protection",
+        "path": "artifacts/policy-assignment-keyvault-purge-protection.json"
+      },
+      {
+        "type": "policyAssignment",
+        "name": "storage-public-access",
+        "path": "artifacts/policy-assignment-storage-public-access.json"
+      },
+      {
+        "type": "policyAssignment",
+        "name": "allowed-locations",
+        "path": "artifacts/policy-assignment-allowed-locations.json"
+      },
+      {
+        "type": "policyAssignment",
+        "name": "require-tags",
+        "path": "artifacts/policy-assignment-require-tags.json"
+      },
+      {
+        "type": "roleAssignment",
+        "name": "contributor-role",
+        "path": "artifacts/role-assignment-contributor.json"
+      },
+      {
+        "type": "roleAssignment",
+        "name": "compliance-reader",
+        "path": "artifacts/role-assignment-compliance-reader.json"
+      }
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "properties": {
+    "displayName": "Enforce Storage Account Public Access Disabled",
+    "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/enforce-storage-public-access",
+    "parameters": {},
+    "resourceGroup": "rg-compliance"
+  }
+}

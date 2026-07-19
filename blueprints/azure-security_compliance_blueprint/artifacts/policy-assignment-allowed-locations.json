@@ -1,0 +1,12 @@
+{
+  "properties": {
+    "displayName": "Allowed Locations",
+    "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/allowed-locations",
+    "parameters": {
+      "listOfAllowedLocations": {
+        "value": "[parameter('allowedLocations')]"
+      }
+    },
+    "resourceGroup": "rg-compliance"
+  }
+}

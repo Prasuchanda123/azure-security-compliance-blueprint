@@ -1,0 +1,15 @@
+{
+  "properties": {
+    "displayName": "Require Tags",
+    "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/require-tag",
+    "parameters": {
+      "tagName": {
+        "value": "[parameter('requiredTags').tagName]"
+      },
+      "tagValue": {
+        "value": "[parameter('requiredTags').tagValue]"
+      }
+    },
+    "resourceGroup": "rg-compliance"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "properties": {
+    "displayName": "Contributor Role Assignment",
+    "roleDefinitionId": "/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7",
+    "principalIds": [
+      "<PRINCIPAL_ID>"
+    ],
+    "resourceGroup": "rg-compliance"
+  }
+}
+
