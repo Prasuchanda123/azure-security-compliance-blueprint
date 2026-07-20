@@ -59,7 +59,7 @@ stages:
 
           az blueprint publish \
             --management-group $(managementGroupId) \
-            --name $(blueprintName) \
+            --blueprint-name $(blueprintName) \
             --version $(Build.BuildId) \
             --blueprint-file $(blueprintPath) \
             --description "Published automatically from Azure DevOps pipeline build $(Build.BuildId)"
