@@ -1,0 +1,97 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  azureServiceConnection: 'Azure-service-connection'
+  blueprintName: 'azure_security_compliance_blueprint'
+  blueprintPath: 'blueprints/azure_security_compliance_blueprint'
+  assignmentName: 'security-compliance-assignment'
+  subscriptionId: '77b4751e-5e24-4172-9fd1-d9c63cd63fb8'
+  managementGroupId: 'mg-governance'
+  assignmentLocation: 'canadacentral'
+  parametersFile: 'blueprints/azure_security_compliance_blueprint/parameters/parameters.json'
+
+stages:
+
+# ---------------------------------------------------------
+# STAGE 1 — Publish Blueprint
+# ---------------------------------------------------------
+- stage: PublishBlueprint
+  displayName: 'Publish Azure Blueprint'
+  jobs:
+  - job: Publish
+    displayName: 'Publish Blueprint to Management Group'
+    steps:
+
+    - bash: |
+        echo "Validating blueprint folder..."
+        if [ ! -d "$(blueprintPath)" ]; then
+          echo "ERROR: Blueprint folder not found: $(blueprintPath)"
+          exit 1
+        fi
+
+        echo "Validating parameters file..."
+        if [ ! -f "$(parametersFile)" ]; then
+          echo "ERROR: Parameters file not found: $(parametersFile)"
+          exit 1
+        fi
+      displayName: 'Validate Blueprint Files'
+
+    - task: AzureCLI@2
+      displayName: 'Publish Blueprint'
+      inputs:
+        azureSubscription: $(azureServiceConnection)
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          set -e
+          echo "Publishing blueprint $(blueprintName) to management group $(managementGroupId)"
+
+          az blueprint publish \
+            --management-group $(managementGroupId) \
+            --name $(blueprintName) \
+            --version $(Build.BuildId) \
+            --blueprint-file $(blueprintPath) \
+            --description "Published automatically from Azure DevOps pipeline build $(Build.BuildId)"
+
+          echo "Blueprint published successfully."
+
+# ---------------------------------------------------------
+# STAGE 2 — Assign Blueprint
+# ---------------------------------------------------------
+- stage: AssignBlueprint
+  displayName: 'Assign Azure Blueprint'
+  dependsOn: PublishBlueprint
+  jobs:
+  - job: Assign
+    displayName: 'Assign Blueprint to Subscription'
+    steps:
+
+    - task: AzureCLI@2
+      displayName: 'Assign Blueprint'
+      inputs:
+        azureSubscription: $(azureServiceConnection)
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          set -e
+          echo "Assigning blueprint $(blueprintName) to subscription $(subscriptionId)"
+
+          az blueprint assignment create \
+            --name $(assignmentName) \
+            --management-group $(managementGroupId) \
+            --subscription $(subscriptionId) \
+            --location $(assignmentLocation) \
+            --parameters $(parametersFile)
+
+          echo "Blueprint assignment completed."
