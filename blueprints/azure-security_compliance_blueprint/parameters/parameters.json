@@ -1,0 +1,14 @@
+{
+    "allowedLocations": [
+        "canadacentral",
+        "eastus"
+    ],
+    "requireTags": {
+     "Owner": "Prasuna",
+     "Environment": "Production",
+     "Project": "AzureSecurityCompliance",
+     "Costcenter": "CC1234"
+    
+    }
+
+}
