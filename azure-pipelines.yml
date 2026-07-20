@@ -61,7 +61,7 @@ stages:
             --management-group $(managementGroupId) \
             --blueprint-name $(blueprintName) \
             --version $(Build.BuildId) \
-            --input-path $(blueprintPath) \
+            --input-folder $(blueprintPath) \
             --description "Published automatically from Azure DevOps pipeline build $(Build.BuildId)"
 
           echo "Blueprint published successfully."
