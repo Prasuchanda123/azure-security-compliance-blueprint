@@ -56,7 +56,8 @@ stages:
         inlineScript: |
           set -e
           echo "Publishing blueprint $(blueprintName) to management group $(managementGroupId)"
-
+          
+          cd $(blueprintPath)
           az blueprint publish \
             --management-group $(managementGroupId) \
             --blueprint-name $(blueprintName) \
