@@ -1,7 +1,7 @@
 {
+  "kind": "resourceGroup",
   "properties": {
     "displayName": "Compliance Resource Group",
-    "description": "Resource Group for Compliance related resources",
     "location": "canadacentral"
   }
 }

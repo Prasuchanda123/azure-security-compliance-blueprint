@@ -1,8 +1,12 @@
 {
+  "kind": "policyAssignment",
   "properties": {
     "displayName": "Assign Security Compliance Initiative",
+
+    "description": "Assign Security Compliance Initiative",
+
     "policyDefinitionId": "/subscriptions/77b4751e-5e24-4172-9fd1-d9c63cd63fb8/providers/Microsoft.Authorization/policySetDefinitions/security-compliance-initiative",
-    "parameters": {},
-    "resourceGroup": "rg-compliance"
+
+    "parameters": {}
   }
 }

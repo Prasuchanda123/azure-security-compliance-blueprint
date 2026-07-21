@@ -1,8 +1,12 @@
 {
+  "kind": "policyAssignment",
   "properties": {
     "displayName": "Enforce Storage Account Public Access Disabled",
+
+    "description": "Enforce storage accounts to disable public access",
+
     "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/enforce-storage-public-access",
-    "parameters": {},
-    "resourceGroup": "rg-compliance"
+
+    "parameters": {}
   }
 }
