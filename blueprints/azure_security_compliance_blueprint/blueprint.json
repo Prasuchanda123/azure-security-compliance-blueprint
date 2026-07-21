@@ -49,8 +49,8 @@
       },
       {
         "type": "policyAssignment",
-        "name": "require-tags",
-        "path": "artifacts/policy-assignment-require-tags.json"
+        "name": "required-tags",
+        "path": "artifacts/policy-assignment-required-tags.json"
       },
       {
         "type": "roleAssignment",
