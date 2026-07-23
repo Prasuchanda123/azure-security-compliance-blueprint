@@ -1,12 +1,15 @@
 {
+  "kind": "policyAssignment",
   "properties": {
     "displayName": "Allowed Locations",
+    "description": "Restrict Azure resources to approved locations",
+
     "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/allowed-locations",
+
     "parameters": {
       "listOfAllowedLocations": {
-        "value": "[parameter('allowedLocations')]"
+        "value": "[parameters('allowedLocations')]"
       }
-    },
-    "resourceGroup": "rg-compliance"
+    }
   }
 }
