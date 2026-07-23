@@ -1,0 +1,446 @@
+trigger:
+  branches:
+    include:
+      - main
+
+
+pool:
+  vmImage: ubuntu-latest
+
+
+variables:
+
+  azureServiceConnection: Azure-management-group-service-connection
+
+  managementGroupId: mg-governance
+
+  subscriptionId: 77b4751e-5e24-4172-9fd1-d9c63cd63fb8
+
+  blueprintName: azure-security-compliance-blueprint
+
+  blueprintVersion: v$(Build.BuildId)
+
+  assignmentName: security-compliance-assignment
+
+  assignmentLocation: canadacentral
+
+  blueprintPath: blueprints/azure_security_compliance_blueprint
+
+
+
+stages:
+
+
+# ======================================================
+# Stage 1 - Validate Blueprint Files
+# ======================================================
+
+- stage: Validate
+
+  displayName: Validate Blueprint Package
+
+  jobs:
+
+  - job: ValidateFiles
+
+    displayName: Validate Files
+
+    steps:
+
+    - checkout: self
+
+
+    - bash: |
+
+        set -e
+
+        echo "Validating blueprint package..."
+
+
+        if [ ! -f "$(blueprintPath)/blueprint.json" ]
+        then
+          echo "blueprint.json missing"
+          exit 1
+        fi
+
+
+        if [ ! -f "$(blueprintPath)/parameters/parameters.json" ]
+        then
+          echo "parameters.json missing"
+          exit 1
+        fi
+
+
+        echo "Blueprint validation completed successfully"
+
+
+      displayName: Validate Blueprint Files
+
+
+
+
+
+# ======================================================
+# Stage 2 - Create Blueprint Definition
+# ======================================================
+
+
+- stage: CreateBlueprint
+
+  displayName: Create Blueprint Definition
+
+  dependsOn: Validate
+
+
+  jobs:
+
+  - job: CreateBlueprint
+
+
+    steps:
+
+
+    - task: AzureCLI@2
+
+      displayName: Create Blueprint
+
+      inputs:
+
+        azureSubscription: $(azureServiceConnection)
+
+        scriptType: bash
+
+        scriptLocation: inlineScript
+
+
+        inlineScript: |
+
+          set -e
+
+
+          echo "Creating Blueprint Definition"
+
+
+          BLUEPRINT_ID="/providers/Microsoft.Management/managementGroups/$(managementGroupId)/providers/Microsoft.Blueprint/blueprints/$(blueprintName)"
+
+
+          BLUEPRINT_URL="https://management.azure.com${BLUEPRINT_ID}?api-version=2018-11-01-preview"
+
+
+          echo "Blueprint URL:"
+          echo $BLUEPRINT_URL
+
+
+          echo "Reading blueprint JSON"
+
+
+          az rest \
+            --method PUT \
+            --uri "$BLUEPRINT_URL" \
+            --body @$(blueprintPath)/blueprint.json
+
+
+          echo "Blueprint Definition Created"
+
+
+
+
+
+# ======================================================
+# Stage 3 - Create Blueprint Artifacts
+# ======================================================
+
+
+- stage: CreateArtifacts
+
+  displayName: Create Blueprint Artifacts
+
+  dependsOn: CreateBlueprint
+
+
+  jobs:
+
+
+  - job: Artifacts
+
+
+    steps:
+
+
+    - task: AzureCLI@2
+
+      displayName: Create Artifacts
+
+
+      inputs:
+
+
+        azureSubscription: $(azureServiceConnection)
+
+        scriptType: bash
+
+        scriptLocation: inlineScript
+
+
+        inlineScript: |
+
+
+          set -e
+
+
+          echo "Creating Blueprint Artifacts"
+
+
+          ARTIFACT_FOLDER="$(blueprintPath)/artifacts"
+
+
+          if [ ! -d "$ARTIFACT_FOLDER" ]
+          then
+
+            echo "Artifact folder not found"
+
+            exit 1
+
+          fi
+
+
+
+          for file in $ARTIFACT_FOLDER/*.json
+
+          do
+
+
+            ARTIFACT_NAME=$(basename $file .json)
+
+
+            echo "Creating Artifact: $ARTIFACT_NAME"
+
+
+
+            ARTIFACT_ID="/providers/Microsoft.Management/managementGroups/$(managementGroupId)/providers/Microsoft.Blueprint/blueprints/$(blueprintName)/artifacts/$ARTIFACT_NAME"
+
+
+            ARTIFACT_URL="https://management.azure.com${ARTIFACT_ID}?api-version=2018-11-01-preview"
+
+
+
+            az rest \
+              --method PUT \
+              --uri "$ARTIFACT_URL" \
+              --body @$file
+
+
+
+          done
+
+
+          echo "Artifacts Created"
+
+
+
+
+
+
+# ======================================================
+# Stage 4 - Publish Blueprint Version
+# ======================================================
+
+
+- stage: Publish
+
+
+  displayName: Publish Blueprint Version
+
+
+  dependsOn: CreateArtifacts
+
+
+  jobs:
+
+
+  - job: PublishBlueprint
+
+
+    steps:
+
+
+    - task: AzureCLI@2
+
+
+      displayName: Publish Blueprint
+
+
+      inputs:
+
+
+        azureSubscription: $(azureServiceConnection)
+
+
+        scriptType: bash
+
+
+        scriptLocation: inlineScript
+
+
+        inlineScript: |
+
+
+          set -e
+
+
+          echo "Publishing Blueprint Version"
+
+
+
+          VERSION_ID="/providers/Microsoft.Management/managementGroups/$(managementGroupId)/providers/Microsoft.Blueprint/blueprints/$(blueprintName)/versions/$(blueprintVersion)"
+
+
+
+          VERSION_URL="https://management.azure.com${VERSION_ID}?api-version=2018-11-01-preview"
+
+
+
+          az rest \
+            --method PUT \
+            --uri "$VERSION_URL" \
+            --body "{}"
+
+
+
+          echo "Blueprint Version Published"
+
+
+
+
+
+
+# ======================================================
+# Stage 5 - Assign Blueprint
+# ======================================================
+
+
+- stage: Assign
+
+
+  displayName: Assign Blueprint
+
+
+  dependsOn: Publish
+
+
+
+  jobs:
+
+
+  - job: BlueprintAssignment
+
+
+    steps:
+
+
+    - task: AzureCLI@2
+
+
+      displayName: Assign Blueprint
+
+
+      inputs:
+
+
+        azureSubscription: $(azureServiceConnection)
+
+
+        scriptType: bash
+
+
+        scriptLocation: inlineScript
+
+
+        inlineScript: |
+
+
+          set -e
+
+
+          echo "Assigning Blueprint"
+
+
+
+          ASSIGNMENT_ID="/subscriptions/$(subscriptionId)/providers/Microsoft.Blueprint/blueprintAssignments/$(assignmentName)"
+
+
+
+          ASSIGNMENT_URL="https://management.azure.com${ASSIGNMENT_ID}?api-version=2018-11-01-preview"
+
+
+
+          az rest \
+            --method PUT \
+            --uri "$ASSIGNMENT_URL" \
+            --body @$(blueprintPath)/parameters/parameters.json
+
+
+
+          echo "Blueprint Assignment Completed"
+
+
+
+
+
+
+
+# ======================================================
+# Stage 6 - Verify Compliance
+# ======================================================
+
+
+- stage: Verify
+
+
+  displayName: Verify Policy Compliance
+
+
+  dependsOn: Assign
+
+
+
+  jobs:
+
+
+  - job: ComplianceCheck
+
+
+    steps:
+
+
+    - task: AzureCLI@2
+
+
+      displayName: Policy Compliance Summary
+
+
+      inputs:
+
+
+        azureSubscription: $(azureServiceConnection)
+
+
+        scriptType: bash
+
+
+        scriptLocation: inlineScript
+
+
+        inlineScript: |
+
+
+          echo "Checking Policy Compliance"
+
+
+
+          az policy state summarize \
+            --subscription $(subscriptionId)
+
+
+
+          echo "Compliance Check Completed"
