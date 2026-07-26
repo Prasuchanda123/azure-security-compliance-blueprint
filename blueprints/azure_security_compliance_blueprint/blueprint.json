@@ -16,18 +16,9 @@
         }
       }
     },
-    "resourceGroups": {
-      "rg-compliance": {
-        "description": "Compliance Resource Group"
-      }
-    },
+   
     "artifacts": [
         {
-        "type": "resourceGroup",
-        "name": "rg-compliance",
-        "path": "artifacts/resource-group-rg-compliance.json"
-        },
-      {
         "type": "policyAssignment",
         "name": "security-initiative-assignment",
         "path": "artifacts/policy-assignment-security-initiative.json"
