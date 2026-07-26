@@ -1,8 +1,12 @@
 {
-    "allowedLocations": [
+  "allowedLocations": {
+    "value": {
+      "list": [
         "canadacentral",
         "eastus"
-    ],
+      ]
+    }
+  },
     "requireTags": {
      "Owner": "Prasuna",
      "Environment": "Production",
