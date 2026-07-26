@@ -2,11 +2,14 @@
   "kind": "policyAssignment",
   "properties": {
     "displayName": "Enforce Key Vault Purge Protection",
-
     "description": "Ensure Azure Key Vault resources have purge protection enabled",
 
     "policyDefinitionId": "/subscriptions/77b4751e-5e24-4172-9fd1-d9c63cd63fb8/providers/Microsoft.Authorization/policyDefinitions/enforce-keyvault-purge-protection",
 
-    "parameters": {}
+    "parameters": {},
+
+    "identity": {
+      "type": "SystemAssigned"
+    }
   }
 }
