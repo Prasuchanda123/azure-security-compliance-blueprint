@@ -2,11 +2,11 @@
   "kind": "resourceGroup",
   "properties": {
     "displayName": "Compliance Resource Group",
+    "description": "Resource group for compliance resources",
+    "name": "rg-compliance",
     "location": "canadacentral"
   }
 }
-
-
 
 
 
