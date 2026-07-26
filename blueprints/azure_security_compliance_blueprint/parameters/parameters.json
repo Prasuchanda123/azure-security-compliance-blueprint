@@ -7,12 +7,12 @@
       ]
     }
   },
-    "requireTags": {
-     "Owner": "Prasuna",
-     "Environment": "Production",
-     "Project": "AzureSecurityCompliance",
-     "Costcenter": "CC1234"
-    
+  "requiredTags": {
+    "value": {
+      "Owner": "Prasuna",
+      "Environment": "Production",
+      "Project": "AzureSecurityCompliance",
+      "Costcenter": "CC1234"
     }
-
+  }
 }
