@@ -2,6 +2,7 @@
   "properties": {
     "description": "Security Compliance Blueprint",
     "targetScope": "subscription",
+
     "parameters": {
       "allowedLocations": {
         "type": "array",
@@ -15,17 +16,19 @@
           "displayName": "Required Tags",
           "description": "Tags that must be applied to all resources."
         },
-        
-         "defaultValue": {
-         "Owner": "Prasuna",
-         "Environment": "Production",
-         "Project": "AzureSecurityCompliance",
-         "Costcenter": "CC1234"
+        "defaultValue": {
+          "Owner": "Prasuna",
+          "Environment": "Production",
+          "Project": "AzureSecurityCompliance",
+          "Costcenter": "CC1234"
+        }
       }
     },
-   
+
+    
+
     "artifacts": [
-        {
+      {
         "type": "policyAssignment",
         "name": "security-initiative-assignment",
         "path": "artifacts/policy-assignment-security-initiative.json"
