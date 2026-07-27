@@ -1,11 +1,9 @@
 {
-  "allowedLocations": {
-    "value": {
-      "list": [
-        "canadacentral",
-        "eastus"
-      ]
-    }
+ "allowedLocations": {
+    "value": [
+      "canadacentral",
+      "eastus"
+    ]
   },
   "requiredTags": {
     "value": {
