@@ -8,7 +8,11 @@
         "type": "array",
         "metadata": {
           "displayName": "Allowed Azure Locations"
-        }
+        },
+        "defaultValue": [
+           "canadacentral",
+           "eastus"
+        ]
       },
       "requiredTags": {
         "type": "object",
