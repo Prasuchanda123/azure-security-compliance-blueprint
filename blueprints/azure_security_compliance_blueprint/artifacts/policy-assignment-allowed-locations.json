@@ -8,7 +8,7 @@
 
     "parameters": {
       "listOfAllowedLocations": {
-        "value": "[parameters('allowedLocations')]"
+        "value": "[parameters('listOfAllowedLocations')]"
       }
     }
   }

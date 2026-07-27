@@ -4,7 +4,7 @@
     "targetScope": "subscription",
 
     "parameters": {
-      "allowedLocations": {
+      "listOfAllowedLocations": {
         "type": "array",
         "metadata": {
           "displayName": "Allowed Azure Locations"
