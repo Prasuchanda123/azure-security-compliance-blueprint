@@ -1,16 +1,28 @@
 {
- "allowedLocations": {
-    "value": [
-      "canadacentral",
-      "eastus"
-    ]
-  },
-  "requiredTags": {
-    "value": {
-      "Owner": "Prasuna",
-      "Environment": "Production",
-      "Project": "AzureSecurityCompliance",
-      "Costcenter": "CC1234"
+  "parameters": {
+    "allowedLocations": {
+      "type": "array",
+      "metadata": {
+        "displayName": "Allowed Locations",
+        "description": "List of allowed Azure regions."
+      },
+      "defaultValue": [
+        "canadacentral",
+        "eastus"
+      ]
+    },
+    "requiredTags": {
+      "type": "object",
+      "metadata": {
+        "displayName": "Required Tags",
+        "description": "Tags that must be applied to all resources."
+      },
+      "defaultValue": {
+        "Owner": "Prasuna",
+        "Environment": "Production",
+        "Project": "AzureSecurityCompliance",
+        "Costcenter": "CC1234"
+      }
     }
   }
 }
