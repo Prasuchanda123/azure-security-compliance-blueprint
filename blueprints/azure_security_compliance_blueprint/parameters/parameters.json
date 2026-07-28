@@ -1,11 +1,13 @@
 {
   "parameters": {
+
     "listOfAllowedLocations": {
       "value": [
         "canadacentral",
         "eastus"
       ]
     },
+
     "requiredTags": {
       "value": {
         "Owner": "Prasuna",
@@ -15,12 +17,13 @@
       }
     },
 
-  "complianceReaderPrincipalId": {
-    "value": "0c8127a9-c1f6-4b74-af32-930345cde825"
-  },
+    "complianceReaderPrincipalId": {
+      "value": "862d401a-6689-415e-9d25-5f123258dddb"
+    },
 
-  "contributorPrincipalId": {
-    "value": "0c8127a9-c1f6-4b74-af32-930345cde825"
-  }
+    "contributorPrincipalId": {
+      "value": "862d401a-6689-415e-9d25-5f123258dddb"
+    }
+
   }
 }
