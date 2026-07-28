@@ -29,6 +29,25 @@
       }
     },
 
+    "complianceReaderPrincipalId": {
+    "type": "string",
+    "metadata": {
+      "displayName": "Compliance Reader Principal ID",
+      "description": "Microsoft Entra ID Object ID for Compliance Reader role assignment"
+    }
+  },
+
+
+  "contributorPrincipalId": {
+    "type": "string",
+    "metadata": {
+      "displayName": "Contributor Principal ID",
+      "description": "Microsoft Entra ID Object ID for Contributor role assignment"
+    }
+  }
+
+  },
+
     
 
     "artifacts": [
@@ -69,4 +88,4 @@
       }
     ]
   }
-}
+

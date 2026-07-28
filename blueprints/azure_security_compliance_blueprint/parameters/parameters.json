@@ -13,6 +13,14 @@
         "Project": "AzureSecurityCompliance",
         "Costcenter": "CC1234"
       }
-    }
+    },
+
+  "complianceReaderPrincipalId": {
+    "value": "YOUR-ENTRA-OBJECT-ID"
+  },
+
+  "contributorPrincipalId": {
+    "value": "YOUR-ENTRA-OBJECT-ID"
+  }
   }
 }
