@@ -1,0 +1,240 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  azureServiceConnection: 'Azure-management-group-service-connection'
+
+  managementGroupId: 'mg-governance'
+  subscriptionId: '77b4751e-5e24-4172-9fd1-d9c63cd63fb8'
+
+  blueprintName: 'azure_security_compliance_blueprint'
+  blueprintPath: 'blueprints/azure_security_compliance_blueprint'
+  assignmentName: 'security-compliance-assignment'
+  blueprintVersion: 'v$(Build.BuildId)'
+
+  parametersFile: 'blueprints/azure_security_compliance_blueprint/parameters/parameters.json'
+  assignmentLocation: 'canadacentral'
+  apiVersion: '2018-11-01-preview'
+
+stages:
+
+# ---------------------------------------------------------
+# STAGE 1 — Validate Blueprint Files
+# ---------------------------------------------------------
+- stage: ValidateBlueprintFiles
+  displayName: 'Validate Blueprint JSON Files'
+  jobs:
+  - job: Validate
+    steps:
+    - bash: |
+        set -e
+
+        echo "Validating blueprint folder..."
+        if [ ! -d "$(blueprintPath)" ]; then
+          echo "ERROR: Blueprint folder not found: $(blueprintPath)"
+          exit 1
+        fi
+
+        echo "Validating blueprint.json..."
+        if [ ! -f "$(blueprintPath)/blueprint.json" ]; then
+          echo "ERROR: blueprint.json missing"
+          exit 1
+        fi
+
+        echo "Validating artifacts folder..."
+        if [ ! -d "$(blueprintPath)/artifacts" ]; then
+          echo "ERROR: artifacts folder missing"
+          exit 1
+        fi
+
+        echo "Validating parameters.json..."
+        if [ ! -f "$(parametersFile)" ]; then
+          echo "ERROR: parameters.json missing"
+          exit 1
+        fi
+
+        echo "Validation completed successfully."
+      displayName: 'Validate Blueprint Files'
+
+# ---------------------------------------------------------
+# STAGE 2 — Create Blueprint Definition
+# ---------------------------------------------------------
+- stage: CreateBlueprint
+  dependsOn: ValidateBlueprintFiles
+  jobs:
+  - job: Create
+    steps:
+    - task: AzureCLI@2
+      displayName: 'Create Blueprint Definition'
+      inputs:
+        azureSubscription: $(azureServiceConnection)
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          set -e
+
+          echo "Creating Blueprint Definition..."
+
+          bpJson=$(cat "$(blueprintPath)/blueprint.json")
+
+          az rest \
+            --method put \
+            --uri "https://management.azure.com/providers/Microsoft.Management/managementGroups/$(managementGroupId)/providers/Microsoft.Blueprint/blueprints/$(blueprintName)?api-version=$(apiVersion)" \
+            --body "$bpJson"
+
+          echo "Blueprint definition created successfully."
+
+# ---------------------------------------------------------
+# STAGE 3 — Upload Artifacts
+# ---------------------------------------------------------
+- stage: UploadArtifacts
+  dependsOn: CreateBlueprint
+  jobs:
+  - job: Upload
+    steps:
+    - task: AzureCLI@2
+      displayName: 'Upload Blueprint Artifacts'
+      inputs:
+        azureSubscription: $(azureServiceConnection)
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          set -e
+
+          echo "Uploading artifacts..."
+
+          BLUEPRINT_SCOPE="/providers/Microsoft.Management/managementGroups/$(managementGroupId)/providers/Microsoft.Blueprint/blueprints/$(blueprintName)"
+
+          for file in $(ls "$(blueprintPath)/artifacts"); do
+            artifactName="${file%.*}"
+            echo "Uploading artifact: $artifactName"
+
+            az rest \
+              --method put \
+              --uri "https://management.azure.com${BLUEPRINT_SCOPE}/artifacts/${artifactName}?api-version=$(apiVersion)" \
+              --body @"$(blueprintPath)/artifacts/${file}"
+
+            echo "Artifact ${artifactName} uploaded."
+          done
+
+          echo "All artifacts uploaded successfully."
+
+# ---------------------------------------------------------
+# STAGE 4 — Publish Blueprint Version
+# ---------------------------------------------------------
+- stage: PublishBlueprint
+  dependsOn: UploadArtifacts
+  jobs:
+  - job: Publish
+    steps:
+    - task: AzureCLI@2
+      displayName: 'Publish Blueprint Version'
+      inputs:
+        azureSubscription: $(azureServiceConnection)
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          set -e
+
+          echo "Publishing blueprint version $(blueprintVersion)..."
+
+          VERSION_URL="/providers/Microsoft.Management/managementGroups/$(managementGroupId)/providers/Microsoft.Blueprint/blueprints/$(blueprintName)/versions/$(blueprintVersion)"
+
+          cat > version.json <<EOF
+          {
+            "properties": {
+              "description": "Published automatically from Azure DevOps pipeline build $(Build.BuildId)"
+            }
+          }
+          EOF
+
+          az rest \
+            --method put \
+            --uri "https://management.azure.com${VERSION_URL}?api-version=$(apiVersion)" \
+            --body @version.json
+
+          echo "Blueprint version published successfully."
+
+# ---------------------------------------------------------
+# STAGE 5 — Assign Blueprint
+# ---------------------------------------------------------
+- stage: AssignBlueprint
+  dependsOn: PublishBlueprint
+  jobs:
+  - job: Assign
+    steps:
+    - bash: |
+        sudo apt-get update
+        sudo apt-get install -y jq
+      displayName: Install jq
+
+    - task: AzureCLI@2
+      displayName: 'Assign Blueprint'
+      inputs:
+        azureSubscription: $(azureServiceConnection)
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          set -e
+
+          echo "Reading parameters.json..."
+          paramsJson=$(jq -c '.parameters' "$(parametersFile)")
+
+          echo "Extracted Blueprint Parameters:"
+          echo $paramsJson
+
+          echo "Assigning blueprint..."
+
+          assignmentBody=$(cat <<EOF
+          {
+            "location": "$(assignmentLocation)",
+            "identity": {
+              "type": "SystemAssigned"
+              },
+            "properties": {
+              "blueprintId": "/providers/Microsoft.Management/managementGroups/$(managementGroupId)/providers/Microsoft.Blueprint/blueprints/$(blueprintName)/versions/$(blueprintVersion)",
+              "parameters": $paramsJson,
+              "resourceGroups": {}
+            }
+          }
+          EOF
+          )
+
+          az rest \
+            --method put \
+            --uri "https://management.azure.com/subscriptions/$(subscriptionId)/providers/Microsoft.Blueprint/blueprintAssignments/$(assignmentName)?api-version=$(apiVersion)" \
+            --body "$assignmentBody"
+
+          echo "Blueprint assignment created successfully."
+
+# ---------------------------------------------------------
+# STAGE 6 — Compliance Report
+# ---------------------------------------------------------
+- stage: ComplianceReport
+  dependsOn: AssignBlueprint
+  jobs:
+  - job: Compliance
+    steps:
+    - task: AzureCLI@2
+      displayName: 'Get Blueprint Assignment Status'
+      inputs:
+        azureSubscription: $(azureServiceConnection)
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          set -e
+
+          echo "Fetching assignment status..."
+
+          az rest \
+            --method get \
+            --uri "https://management.azure.com/subscriptions/$(subscriptionId)/providers/Microsoft.Blueprint/blueprintAssignments/$(assignmentName)?api-version=$(apiVersion)" \
+            --output json > assignment-status.json
+
+          echo "Assignment status:"
+          cat assignment-status.json
