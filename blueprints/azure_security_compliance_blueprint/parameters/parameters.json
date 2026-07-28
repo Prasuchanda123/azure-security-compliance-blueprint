@@ -1,23 +1,13 @@
 {
   "parameters": {
-    "listOfAllowedLocations": {
-      "type": "array",
-      "metadata": {
-        "displayName": "Allowed Locations",
-        "description": "List of allowed Azure regions."
-      },
-      "defaultValue": [
+    "allowedLocations": {
+      "value": [
         "canadacentral",
         "eastus"
       ]
     },
     "requiredTags": {
-      "type": "object",
-      "metadata": {
-        "displayName": "Required Tags",
-        "description": "Tags that must be applied to all resources."
-      },
-      "defaultValue": {
+      "value": {
         "Owner": "Prasuna",
         "Environment": "Production",
         "Project": "AzureSecurityCompliance",
